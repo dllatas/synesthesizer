@@ -3,29 +3,22 @@ import Tone from 'tone';
 
 import Circle from './Circle.js';
 import Frequency from './frequency.js';
+//import Library from './library.js';
 
-const synthOpts = {
-	"oscillator" : {
-		"type" : "pwm",
-		"modulationFrequency" : 0.2
-	},
-	"envelope" : {
-		"attack" : 0.02,
-		"decay" : 0.1,
-		"sustain" : 0.2,
-		"release" : 0.9,
-	}
-}
+const BARSIZE = 8
+const INITIAL_COLOR = "#444444"
 
 class Synesthesizer extends React.Component {
 	constructor(props) {
 		super(props);
+		// TODO: Load sound from library into synth via UI
 		const synth = new Tone.Synth().toMaster();
 		const transport = Tone.Transport
 
 		this.state = {
 			// TODO: Change to 2D to have chords
-			bar: Array(4).fill("#ff7f50"),
+			// TODO: Allow to have more than 4 max 16
+			bar: Array(BARSIZE).fill(INITIAL_COLOR),
 			synth,
 			transport
 		}
@@ -35,7 +28,7 @@ class Synesthesizer extends React.Component {
 	}
 
 	setBarColor(event, id) {
-		const { transport, bar } = this.state
+		const { bar } = this.state
 		const color = event.target.value
 		const updatedBar = bar.map((item, index) => {
 			if (index !== id) {
@@ -59,10 +52,15 @@ class Synesthesizer extends React.Component {
 
 		seq.start()
 		transport.start()
+
+		this.setState({
+			seq
+		});
 	}
 
 	stopBar() {
-		const { transport } = this.state
+		const { transport, seq = {} } = this.state
+		seq.stop()
 		transport.stop()
 	}
 
@@ -70,16 +68,18 @@ class Synesthesizer extends React.Component {
 		const { bar } = this.state
 		return(
 			<div>
-			<button onClick={this.playBar}>PLAY</button>
-			<button onClick={this.stopBar}>STOP</button>
-			<div style={{ display: "flex", flexDirection: "row"}}>
-			<Circle id={0} color={bar[0]} onClick={this.setBarColor} />
-			<Circle id={1} color={bar[1]} onClick={this.setBarColor} />
-			<Circle id={2} color={bar[2]} onClick={this.setBarColor} />
-			<Circle id={3} color={bar[3]} onClick={this.setBarColor} />
+				<div style={{ justifyContent: "center", display: "flex", flexDirection: "row"}}>
+				<button style={{ width: "300px", height: "300px", borderRadius: "10%", fontSize: "xxx-large"}} onClick={this.playBar}>PLAY</button>
+				<button style={{ width: "300px", height: "300px", borderRadius: "10%", fontSize: "xxx-large"}} onClick={this.stopBar}>STOP</button>
+				</div>
+				<div style={{ display: "flex", flexDirection: "row"}}>
+				{
+					bar.map((color, i) =>
+						<Circle key={i} id={i} color={color} onClick={this.setBarColor} />
+					)
+				}
+				</div>
 			</div>
-			</div>
-
 		)
 	}
 }
